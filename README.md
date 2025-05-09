@@ -43,8 +43,8 @@ pip install -r requirements.txt
 ## Use
 
 1. run `python prep.py` to convert 'dicom file' to 'numpy array'
-2. run `python train.py` to start training.
-3. run `python test.py` to start testing.
+2. Set `mode=train`, then run `python main.py` to start training.
+3. Set `mode=test`, then run `python main.py` to start testing.
 -------
 
 ### RESULT  
