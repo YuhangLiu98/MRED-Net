@@ -49,7 +49,7 @@ pip install -r requirements.txt
 
 ### RESULT  
 <div align=center>
+<img src="https://github.com/YuhangLiu98/MRED-net/blob/main/img/result3.png" width="800"/>   
 <img src="https://github.com/YuhangLiu98/MRED-net/blob/main/img/result1.png" width="800"/>   
 <img src="https://github.com/YuhangLiu98/MRED-net/blob/main/img/result2.png" width="800"/>   
-<img src="https://github.com/YuhangLiu98/MRED-net/blob/main/img/result4.png" width="800"/>   
 </div>
