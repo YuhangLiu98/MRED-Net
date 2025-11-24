@@ -978,10 +978,10 @@ class T2T_module(nn.Module):
     def forward(self, x):
 
         # Tokenization
-        x = self.soft_split0(x)  ## [64, 1, 64, 64]->[64,49,841]
+        x = self.soft_split0(x)
 
         #  Mamba Block
-        x = self.attention1(x.transpose(1, 2))  # [64,49,841]->[64,841,64]
+        x = self.attention1(x.transpose(1, 2))
         # print('0',x.shape)
         res_11 = x
 
