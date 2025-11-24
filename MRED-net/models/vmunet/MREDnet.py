@@ -988,7 +988,7 @@ class T2T_module(nn.Module):
         # ET2T Block
         B, new_HW, C = x.shape
         x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))
-        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))  ##  shift some position
+        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))
         x = self.soft_split1(x) 
         x = self.downsample1(x.transpose(1, 2))
         # print('1',x.shape)
@@ -1000,7 +1000,7 @@ class T2T_module(nn.Module):
         # ET2T Block    
         B, new_HW, C = x.shape
         x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))
-        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))  ## shift back position
+        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))
         x = self.soft_split2(x)
         x = self.downsample2(x.transpose(1, 2))
         # print('2',x.shape)
