@@ -16,7 +16,7 @@ git clone https://github.com/YuhangLiu98/MRED-net.git
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 3. Additionally, Mamba dependencies are required,
-please refer to [VM-UNet](https://github.com/JCruan519/VM-UNet)
+please refer to [VM-UNet](https://github.com/JCruan519/VM-UNet).
 
 ## 💽 Dataset Download
 1. The Mayo Clinic Low Dose CT by Mayo Clinic   
