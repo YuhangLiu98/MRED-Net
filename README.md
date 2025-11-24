@@ -15,16 +15,18 @@ git clone https://github.com/YuhangLiu98/MRED-net.git
 ```shell script
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
-3. Additionally, Mamba dependencies are required,
-please refer to [VM-UNet](https://github.com/JCruan519/VM-UNet).
+3. Additionally, Mamba dependencies are required, for example,
+```
+pip install triton==2.1.0
+pip install causal_conv1d==1.2.1
+pip install mamba_ssm==2.2.2
+```
 
 ## 💽 Dataset Download
-1. The Mayo Clinic Low Dose CT by Mayo Clinic   
-(I can't share this data, you should ask at the URL below if you want)  
+1. The Mayo Clinic Low Dose CT by Mayo Clinic (I can't share this data, you should ask at the URL below if you want)  
 https://www.cancerimagingarchive.net/collection/ldct-and-projection-data/
 
-2. The Piglet Low Dose CT by X. Yi and P. Babyn, "Sharpness-aware low-dose CT denoising using conditional generative adversarial network"
-(I can't share this data, you should ask at the URL below if you want)  
+2. The Piglet Low Dose CT by X. Yi and P. Babyn, "Sharpness-aware low-dose CT denoising using conditional generative adversarial network" (I can't share this data, you should ask at the URL below if you want)  
 https://github.com/xinario/SAGAN?tab=readme-ov-file
 
 
