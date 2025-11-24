@@ -502,7 +502,7 @@ class VSSBlock(nn.Module):
 
 
 class VSSLayer(nn.Module):
-    """ A basic Swin Transformer layer for one stage.
+    """ A basic Mamba layer for one stage.
     Args:
         dim (int): Number of input channels.
         depth (int): Number of blocks.
@@ -567,7 +567,7 @@ class VSSLayer(nn.Module):
         return x
 
 class VSSLayer_up(nn.Module):
-    """ A basic Swin Transformer layer for one stage.
+    """ A basic Mamba layer for one stage.
     Args:
         dim (int): Number of input channels.
         depth (int): Number of blocks.
@@ -887,7 +887,7 @@ class token_VSSBlock(nn.Module):
         return x
 
 class token_VSSLayer(nn.Module):
-    """ A basic Swin Transformer layer for one stage.
+    """ A basic Mamba layer for one stage.
     Args:
         dim (int): Number of input channels.
         depth (int): Number of blocks.
@@ -956,23 +956,22 @@ class T2T_module(nn.Module):
     encoding module
     """
 
-    def __init__(self, img_size=64, tokens_type='performer', in_chans=1, embed_dim=256, token_dim=64):
+    def __init__(self, img_size=64, in_chans=1, embed_dim=256, token_dim=64):
         super().__init__()
 
-        if tokens_type == 'transformer':
-            print('adopt transformer encoder for tokens-to-token')
-            self.soft_split0 = nn.Unfold(kernel_size=(6, 6), stride=(2, 2))
-            self.soft_split1 = nn.Unfold(kernel_size=(3, 3), stride=(1, 1))
-            self.soft_split2 = nn.Unfold(kernel_size=(3, 3), stride=(1, 1))
 
-            self.downsample1 = PatchMerging2D(dim=576//2)
-            self.downsample2 = PatchMerging2D(dim=576//2)
+        self.soft_split0 = nn.Unfold(kernel_size=(6, 6), stride=(2, 2))
+        self.soft_split1 = nn.Unfold(kernel_size=(3, 3), stride=(1, 1))
+        self.soft_split2 = nn.Unfold(kernel_size=(3, 3), stride=(1, 1))
 
-            self.attention1 = token_VSSLayer(dim=in_chans*6*6, output_dim=token_dim, depth=1, downsample=None)
-            self.attention2 = token_VSSLayer(dim=token_dim*3*3*2, output_dim=token_dim, depth=1, downsample=None)
-            self.project = nn.Linear(token_dim * 3 * 3*2, embed_dim)
+        self.downsample1 = PatchMerging2D(dim=576//2)
+        self.downsample2 = PatchMerging2D(dim=576//2)
 
-        # self.num_patches = (img_size // (1 * 2 * 2)) * (img_size // (1 * 2 * 2))  # there are 3 sfot split, stride are 4,2,2 seperately
+        self.attention1 = token_VSSLayer(dim=in_chans*6*6, output_dim=token_dim, depth=1, downsample=None)
+        self.attention2 = token_VSSLayer(dim=token_dim*3*3*2, output_dim=token_dim, depth=1, downsample=None)
+        self.project = nn.Linear(token_dim * 3 * 3*2, embed_dim)
+
+        # self.num_patches = (img_size // (1 * 2 * 2)) * (img_size // (1 * 2 * 2))
         self.num_patches = 529  ## calculate myself
 
     def forward(self, x):
@@ -1014,25 +1013,22 @@ class Token_back_Image(nn.Module):
     decoding module
     """
 
-    def __init__(self, img_size=64, tokens_type='transformer', in_chans=1, embed_dim=256, token_dim=64, kernel=32,
+    def __init__(self, img_size=64, in_chans=1, embed_dim=256, token_dim=64, kernel=32,
                  stride=32):
         super().__init__()
 
-        if tokens_type == 'transformer':
-            print('adopt transformer encoder for tokens-to-token')
-            self.soft_split0 = nn.Fold((64, 64), kernel_size=(6, 6), stride=(2, 2))
-            self.soft_split1 = nn.Fold((30, 30), kernel_size=(3, 3), stride=(1, 1))
-            self.soft_split2 = nn.Fold((14, 14), kernel_size=(3, 3), stride=(1, 1))
-            self.upsample1 = PatchExpand2D(dim=576//2)
-            self.upsample2 = PatchExpand2D(dim=576//2)
+        self.soft_split0 = nn.Fold((64, 64), kernel_size=(6, 6), stride=(2, 2))
+        self.soft_split1 = nn.Fold((30, 30), kernel_size=(3, 3), stride=(1, 1))
+        self.soft_split2 = nn.Fold((14, 14), kernel_size=(3, 3), stride=(1, 1))
+                     
+        self.upsample1 = PatchExpand2D(dim=576//2)
+        self.upsample2 = PatchExpand2D(dim=576//2)
 
+        self.attention1 = token_VSSLayer(dim=token_dim, output_dim=in_chans*6*6, depth=1, downsample=None)
+        self.attention2 = token_VSSLayer(dim=token_dim, output_dim=token_dim*3*3*2, depth=1, downsample=None)
+        self.project = nn.Linear(embed_dim, token_dim * 3 * 3 * 2)
 
-            self.attention1 = token_VSSLayer(dim=token_dim, output_dim=in_chans*6*6, depth=1, downsample=None)
-            self.attention2 = token_VSSLayer(dim=token_dim, output_dim=token_dim*3*3*2, depth=1, downsample=None)
-            self.project = nn.Linear(embed_dim, token_dim * 3 * 3 * 2)
-
-
-        self.num_patches = (img_size // (1 * 2 * 2)) * (img_size // (1 * 2 * 2))  # there are 3 sfot split, stride are 4,2,2 seperately
+        self.num_patches = (img_size // (1 * 2 * 2)) * (img_size // (1 * 2 * 2)) 
 
     def forward(self, x, res_11, res_22):
 
@@ -1080,7 +1076,7 @@ class VSSM(nn.Module):
         self.dims = dims
 
         self.tokens_to_token = T2T_module(  ## use module 2
-            img_size=64, tokens_type='transformer', in_chans=in_chans, embed_dim=self.embed_dim, token_dim=self.embed_dim)
+            img_size=64, in_chans=in_chans, embed_dim=self.embed_dim, token_dim=self.embed_dim)
         num_patches = self.tokens_to_token.num_patches
         # self.patch_embed = PatchEmbed2D(patch_size=patch_size, in_chans=in_chans, embed_dim=self.embed_dim,
         #                                 norm_layer=norm_layer if patch_norm else None)
@@ -1096,7 +1092,7 @@ class VSSM(nn.Module):
 
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
         dpr_decoder = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths_decoder))][::-1]
-        self.dconv1 = Token_back_Image(img_size=64, tokens_type='transformer', in_chans=in_chans, embed_dim=self.embed_dim, token_dim=self.embed_dim)
+        self.dconv1 = Token_back_Image(img_size=64, in_chans=in_chans, embed_dim=self.embed_dim, token_dim=self.embed_dim)
 
         self.layers = nn.ModuleList()
         for i_layer in range(self.num_layers):
