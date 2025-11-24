@@ -3,9 +3,7 @@ import argparse
 from torch.backends import cudnn
 from loader import get_loader
 from solver import Solver
-# import T2T_vit_model
 
-import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'        ## 1/2 ,multi GPU     2,3
 
 def main(args):
