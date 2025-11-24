@@ -31,7 +31,7 @@ https://github.com/xinario/SAGAN?tab=readme-ov-file
 
 
 ## 🗃️ Data Preparation:
-Run `python prep.py` to convert 'dicom file' to 'numpy array', please refer to https://github.com/SSinyu/RED-CNN for more detailed data preparation. 
+Run `python prep.py` to convert 'dicom file' to 'numpy array', please refer to [RED-CNN](https://github.com/SSinyu/RED-CNN) for more detailed data preparation. 
 The path of .npy files for training and testing can be set as
 ```
 python main.py --train_data_path [your_train_path] --test_data_path [your_test_path]
