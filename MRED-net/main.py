@@ -52,7 +52,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--mode', type=str, default='test')
+    parser.add_argument('--mode', type=str, default='train')
     parser.add_argument('--load_mode', type=int, default=0)
     parser.add_argument('--train_data_path', type=str, default='/home/ac/data/lyh/npy_img_piglet_train_0.50/')
     parser.add_argument('--test_data_path', type=str, default='/home/ac/data/lyh/npy_img_piglet_test_0.50/')
