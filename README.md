@@ -7,30 +7,29 @@
 </div>
 
 ## 🛠️ Installation
-MRED-net can be installed from source,
+1. MRED-net can be installed from source,
 ```shell
 git clone https://github.com/YuhangLiu98/MRED-net.git
 ```
-Then, [Pytorch](https://pytorch.org/) is required, for example,
+2. Then, [Pytorch](https://pytorch.org/) is required, for example,
 ```shell script
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
-Additionally, Mamba dependencies are required,
+3. Additionally, Mamba dependencies are required,
 please refer to [VM-UNet](https://github.com/JCruan519/VM-UNet)
 
 ## 💽 Dataset Download
-1.The Mayo Clinic Low Dose CT by Mayo Clinic   
+1. The Mayo Clinic Low Dose CT by Mayo Clinic   
 (I can't share this data, you should ask at the URL below if you want)  
 https://www.cancerimagingarchive.net/collection/ldct-and-projection-data/
 
-2.The Piglet Low Dose CT by X. Yi and P. Babyn, "Sharpness-aware low-dose CT denoising using conditional generative adversarial network"
+2. The Piglet Low Dose CT by X. Yi and P. Babyn, "Sharpness-aware low-dose CT denoising using conditional generative adversarial network"
 (I can't share this data, you should ask at the URL below if you want)  
 https://github.com/xinario/SAGAN?tab=readme-ov-file
 
 
 ## 🗃️ Data Preparation:
 Run `python prep.py` to convert 'dicom file' to 'numpy array', please refer to https://github.com/SSinyu/RED-CNN for more detailed data preparation. 
-
 The path of .npy files for training and testing can be set as
 ```
 python main.py --train_data_path [your_train_path] --test_data_path [your_test_path]
