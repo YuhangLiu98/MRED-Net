@@ -14,7 +14,6 @@ from torchvision.utils import save_image
 from thop import profile
 from thop import clever_format
 from prep import printProgressBar
-# from models.vmunet.vmunet import VMUNet
 from models.vmunet.MREDnet import VSSM
 
 from loss import Disentangle_UNet, init_net, define_F, PatchNCELoss
@@ -28,32 +27,7 @@ import torch.nn.functional as F
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-
-#
-# def split_arr(arr,patch_size,stride=64):    ## 512*512 to 32*32
-#     pad = (32, 32, 32, 32) # pad by (0, 1), (2, 1), and (3, 3)
-#     arr = nn.functional.pad(arr, pad, "constant", 0)
-#     _,_,h,w = arr.shape
-#     num = h//stride - 1
-#     arrs = torch.zeros(num*num,1,patch_size,patch_size)
-#
-#     for i in range(num):
-#         for j in range(num):
-#             arrs[i*num+j,0] = arr[0,0,i*stride:i*stride+patch_size,j*stride:j*stride+patch_size]
-#     return arrs
-#
-# def agg_arr(arrs, size, stride=64):  ## from 32*32 to size 512*512
-#     arr = torch.zeros(size, size)
-#     n,_,h,w = arrs.shape
-#     num = size//stride
-#     for i in range(num):
-#         for j in range(num):
-#             arr[i*stride:(i+1)*stride,j*stride:(j+1)*stride] = arrs[i*num+j,:,32:32+64,32:32+64]
-#   #return arr
-#     return arr.unsqueeze(0).unsqueeze(1)
-
-
-def split_arr(arr, patch_size, stride=32):  ## 512*512 to 32*32
+def split_arr(arr, patch_size, stride=32):
     pad = (16, 16, 16, 16)  # pad by (0, 1), (2, 1), and (3, 3)
     arr = nn.functional.pad(arr, pad, "constant", 0)
     _, _, h, w = arr.shape
@@ -112,16 +86,6 @@ class Solver(object):
         logging.basicConfig(filename=log_filename, level=logging.INFO, format='%(asctime)s - %(message)s')
 
         print('#----------Prepareing Model----------#')
-        # self.VMUNet = VMUNet(
-        #     num_classes=1,
-        #     input_channels=1,
-        #     depths=[1],
-        #     depths_decoder=[1],
-        #     dims=[64],
-        #     dims_decoder=[64],
-        #     drop_path_rate=0.2,
-        #     load_ckpt_path=None,
-        # )
         self.VMUNet = VSSM(in_chans=1,
                            num_classes=1,
                            depths=[1, 1],
@@ -222,7 +186,6 @@ class Solver(object):
         total_iters = 0
         start_time = time.time()
         loss_all = []
-        self.load_model(5700)
 
         for epoch in range(1, self.num_epochs):
             self.VMUNet.train(True)
@@ -313,8 +276,6 @@ class Solver(object):
                 shape_ = x.shape[-1]
                 x = x.unsqueeze(0).float().to(self.device)
                 y = y.unsqueeze(0).float().to(self.device)
-                # arrs = split_arr(x, 128).to(self.device)  ## split to image patches for test into 4 patches
-                # arrs = self.VMUNet(arrs)
 
                 arrs = split_arr(x, 64).to(self.device)  ## split to image patches for test into 4 patches
 
@@ -353,16 +314,6 @@ class Solver(object):
     def test(self):
         del self.VMUNet
         print('#----------Prepareing Model----------#')
-        # self.VMUNet = VMUNet(
-        #     num_classes=1,
-        #     input_channels=1,
-        #     depths=[1],
-        #     depths_decoder=[1],
-        #     dims=[64],
-        #     dims_decoder=[64],
-        #     drop_path_rate=0.2,
-        #     load_ckpt_path=None,
-        # )
         self.VMUNet = VSSM(in_chans=1,
                            num_classes=1,
                            depths=[1, 1],
@@ -413,9 +364,6 @@ class Solver(object):
                 arrs[64:2 * 64] = self.VMUNet(arrs[64:2 * 64])
                 arrs[2 * 64:3 * 64] = self.VMUNet(arrs[2 * 64:3 * 64])
                 arrs[3 * 64:4 * 64] = self.VMUNet(arrs[3 * 64:4 * 64])
-
-                # arrs = split_arr(x, 128).to(self.device)  ## split to image patches for test into 4 patches
-                # arrs = self.VMUNet(arrs)
                 pred = agg_arr(arrs, 512).to(self.device)
                 endTime = time.time()
                 if i != 0:
@@ -461,7 +409,7 @@ class Solver(object):
                                  prefix="Compute measurements ..",
                                  suffix='Complete', length=25)
             print('\n')
-            print(f"每张图片平均用时：{sum(time_record) / len(time_record)}")
+            print(f"Mean time per image: {sum(time_record) / len(time_record)}")
 
             print('Original === \nPSNR avg: {:.4f} \nSSIM avg: {:.4f} \nRMSE avg: {:.4f}'.format(
                 ori_psnr_avg / len(self.test_data_loader),
@@ -473,10 +421,10 @@ class Solver(object):
                 pred_ssim_avg / len(self.test_data_loader),
                 pred_rmse_avg / len(self.test_data_loader)))
             input = torch.randn(256, 1, 64, 64).cuda()
-            macs, params = profile(self.VMUNet.cuda(), (input,))
-            macs, params = clever_format([macs, params], "%.3f")
+            macs, _ = profile(self.VMUNet.cuda(), (input,))
+            macs, _ = clever_format([macs, _], "%.3f")
             print(macs)
-            print(params)
+
 
     @torch.no_grad()
     def initializes_target_network(self):
