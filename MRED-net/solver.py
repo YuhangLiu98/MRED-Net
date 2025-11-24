@@ -14,7 +14,7 @@ from torchvision.utils import save_image
 from thop import profile
 from thop import clever_format
 from prep import printProgressBar
-from models.vmunet.MREDnet import VSSM
+from MREDnet import VSSM
 
 from loss import Disentangle_UNet, init_net, define_F, PatchNCELoss
 
