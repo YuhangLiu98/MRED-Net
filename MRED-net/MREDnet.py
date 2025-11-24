@@ -977,11 +977,12 @@ class T2T_module(nn.Module):
     def forward(self, x):
 
         # Tokenization
-        x = self.soft_split0(x)
-
-        #  Mamba Block
-        x = self.attention1(x.transpose(1, 2))
+        x = self.soft_split0(x).transpose(1, 2)
         # print('0',x.shape)
+        
+        #  Mamba Block
+        x = self.attention1(x)
+
         res_11 = x
 
         # ET2T Block
@@ -994,6 +995,7 @@ class T2T_module(nn.Module):
 
         #  Mamba Block
         x = self.attention2(x)
+        
         res_22 = x
 
         # ET2T Block    
