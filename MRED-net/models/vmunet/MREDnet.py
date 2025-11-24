@@ -953,7 +953,7 @@ class token_VSSLayer(nn.Module):
 
 class T2T_module(nn.Module):
     """
-    CTformer encoding module
+    encoding module
     """
 
     def __init__(self, img_size=64, tokens_type='performer', in_chans=1, embed_dim=256, token_dim=64):
@@ -980,7 +980,7 @@ class T2T_module(nn.Module):
         # Tokenization
         x = self.soft_split0(x)  ## [64, 1, 64, 64]->[64,49,841]
 
-        # CTformer module A
+        #  module A
         x = self.attention1(x.transpose(1, 2))  # [64,49,841]->[64,841,64]
         # print('0',x.shape)
         res_11 = x
@@ -994,7 +994,7 @@ class T2T_module(nn.Module):
         # 法2(此处将625=25*25减半，从而进行下采样)
         # print('1',x.shape)
 
-        # CTformer module B
+        #  module B
         x = self.attention2(x)  # [64,576,625]->[64,625,64]
         res_22 = x
         B, new_HW, C = x.shape
@@ -1012,7 +1012,7 @@ class T2T_module(nn.Module):
 
 class Token_back_Image(nn.Module):
     """
-    CTformer decoding module
+    decoding module
     """
 
     def __init__(self, img_size=64, tokens_type='transformer', in_chans=1, embed_dim=256, token_dim=64, kernel=32,
@@ -1040,7 +1040,7 @@ class Token_back_Image(nn.Module):
         x = self.project(x)
         x = self.upsample1(x).transpose(1, 2)
 
-        # CTformer module C
+        #  module C
         x = self.soft_split2(x)
         x = torch.roll(x, shifts=(-2, -2), dims=(-1, -2))
         x = rearrange(x, 'b c h w -> b c (h w)').transpose(1, 2)
@@ -1048,7 +1048,7 @@ class Token_back_Image(nn.Module):
 
         x = self.attention2(x)
 
-        # CTformer module D
+        #  module D
         x = self.upsample2(x).transpose(1, 2)
         x = self.soft_split1(x)
         x = torch.roll(x, shifts=(-2, -2), dims=(-1, -2))
@@ -1169,7 +1169,7 @@ class VSSM(nn.Module):
 
         skip_list = []
         i = 0
-        for blk in self.layers:  ## only one intermediate transformer block
+        for blk in self.layers:  
             i += 1
             x = blk(x)
             skip_list.append(x)
