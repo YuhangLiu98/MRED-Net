@@ -980,34 +980,33 @@ class T2T_module(nn.Module):
         # Tokenization
         x = self.soft_split0(x)  ## [64, 1, 64, 64]->[64,49,841]
 
-        #  module A
+        #  Mamba Block
         x = self.attention1(x.transpose(1, 2))  # [64,49,841]->[64,841,64]
         # print('0',x.shape)
         res_11 = x
-        B, new_HW, C = x.shape
-        x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))  # [64,841,64]->[64,64,29,29]
-        # 法1(此处将（29,29）减半进行，从而下采样)
-        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))  ##  shift some position
-        x = self.soft_split1(x)  # [64,64,29,29]->[64,C:576,L:625]   576=3*3*64
 
+        # ET2T Block
+        B, new_HW, C = x.shape
+        x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))
+        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))  ##  shift some position
+        x = self.soft_split1(x) 
         x = self.downsample1(x.transpose(1, 2))
-        # 法2(此处将625=25*25减半，从而进行下采样)
         # print('1',x.shape)
 
-        #  module B
-        x = self.attention2(x)  # [64,576,625]->[64,625,64]
+        #  Mamba Block
+        x = self.attention2(x)
         res_22 = x
-        B, new_HW, C = x.shape
-        x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))  # [64,625,64]->[64,64,25,25]
-        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))  ## shift back position
-        x = self.soft_split2(x)  # [64,64,25,25]->[64,576,529]    576=3*3*64
 
+        # ET2T Block    
+        B, new_HW, C = x.shape
+        x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))
+        x = torch.roll(x, shifts=(2, 2), dims=(2, 3))  ## shift back position
+        x = self.soft_split2(x)
         x = self.downsample2(x.transpose(1, 2))
         # print('2',x.shape)
 
-
-        x = self.project(x)  ## [64,576,529]->[64,529,64]
-        return x, res_11, res_22  # ,res0,res2
+        x = self.project(x)
+        return x, res_11, res_22
 
 
 class Token_back_Image(nn.Module):
@@ -1036,23 +1035,26 @@ class Token_back_Image(nn.Module):
         self.num_patches = (img_size // (1 * 2 * 2)) * (img_size // (1 * 2 * 2))  # there are 3 sfot split, stride are 4,2,2 seperately
 
     def forward(self, x, res_11, res_22):
-        # print(res_11.shape,' ',res_22.shape)
+
         x = self.project(x)
         x = self.upsample1(x).transpose(1, 2)
 
-        #  module C
+        #  IET2T Block
         x = self.soft_split2(x)
         x = torch.roll(x, shifts=(-2, -2), dims=(-1, -2))
         x = rearrange(x, 'b c h w -> b c (h w)').transpose(1, 2)
         x = x + res_22
-
+        
+        #  Mamba Block
         x = self.attention2(x)
 
-        #  module D
+        #  IET2T Block
         x = self.upsample2(x).transpose(1, 2)
         x = self.soft_split1(x)
         x = torch.roll(x, shifts=(-2, -2), dims=(-1, -2))
         x = rearrange(x, 'b c h w -> b c (h w)').transpose(1, 2)
+        
+        #  Mamba Block
         x = x + res_11
         x = self.attention1(x).transpose(1, 2)
 
