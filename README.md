@@ -43,7 +43,7 @@ python main.py --train_data_path [your_train_path] --test_data_path [your_test_p
 
 ## 🔥 Model Training and Testing:
 ```
->> python main.py  ## train CTformer. 
+>> python main.py  ## train MRED-Net. 
 >> python main.py --mode test --test_iters [set iters]  ## run test.
 ```
 
